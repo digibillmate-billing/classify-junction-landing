@@ -1,0 +1,12 @@
+{
+  "name": "classify-junction-landing",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Landing page for Classify Junction, the public classifieds marketplace built by DigiBillMate.",
+  "scripts": {
+    "deploy": "wrangler pages deploy site --project-name classify-junction-landing --branch main --commit-dirty=true"
+  },
+  "devDependencies": {
+    "wrangler": "4.144.0"
+  }
+}

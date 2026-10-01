@@ -1,0 +1,7 @@
+{
+  // Landing site only. This is a Cloudflare Pages project.
+  // It is not the classify-junction Worker that serves the marketplace.
+  "name": "classify-junction-landing",
+  "pages_build_output_dir": "site",
+  "compatibility_date": "2026-10-01"
+}

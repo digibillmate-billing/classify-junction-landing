@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://classify-junction-landing.pages.dev/sitemap.xml
