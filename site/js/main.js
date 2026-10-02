@@ -133,6 +133,25 @@ if (liveFront && liveBack) {
     month: 'short',
     year: 'numeric',
   })
+  const kolkataDayFormat = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  const kolkataDay = (iso) => {
+    const parsed = new Date(iso)
+    if (Number.isNaN(parsed.getTime())) return ''
+    return kolkataDayFormat.format(parsed)
+  }
+  const addDays = (day, delta) => {
+    const [year, month, date] = day.split('-').map(Number)
+    const shifted = new Date(Date.UTC(year, month - 1, date + delta))
+    const y = shifted.getUTCFullYear()
+    const m = String(shifted.getUTCMonth() + 1).padStart(2, '0')
+    const d = String(shifted.getUTCDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+  }
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
   let ads = []
   let index = 0
@@ -225,7 +244,9 @@ if (liveFront && liveBack) {
     const when = document.createElement('p')
     when.className = 'listing-when'
     const parsed = new Date(ad.publishedAt)
-    when.textContent = Number.isNaN(parsed.getTime()) ? 'Published' : `Posted ${postedOn.format(parsed)}`
+    const posted = Number.isNaN(parsed.getTime()) ? 'Published' : `Posted ${postedOn.format(parsed)}`
+    const place = role === 'front' && ads.length > 1 ? ` · ${(index % ads.length) + 1} of ${ads.length}` : ''
+    when.textContent = posted + place
     article.append(when)
 
     const numberRow = document.createElement('div')
@@ -283,7 +304,7 @@ if (liveFront && liveBack) {
       }
     }))
     if (token !== paintToken) return
-    const signature = shown.map((ad) => `${ad.id}:${ad.masked}`).join('|')
+    const signature = `${index}/${ads.length}|${shown.map((ad) => `${ad.id}:${ad.masked}`).join('|')}`
     if (signature === painted) return
     painted = signature
     fill(liveFront, shown[0], 'front')
@@ -294,21 +315,57 @@ if (liveFront && liveBack) {
     }
   }
 
-  const refresh = async () => {
-    try {
-      const rows = await rpc('public_list_ads', { p_limit: 6 })
-      if (!Array.isArray(rows)) throw new Error('Unexpected advertisements.')
-      const next = []
+  const rememberMask = (ad) => {
+    const previous = ads.find((item) => item.id === ad.id)
+    if (previous && previous.masked !== null) ad.masked = previous.masked
+    return ad
+  }
+
+  // One calendar day in India: today, otherwise yesterday, otherwise the newest day that has ads.
+  const loadDay = async () => {
+    const today = kolkataDay(new Date().toISOString())
+    const yesterday = addDays(today, -1)
+    const collected = []
+    let offset = 0
+    let total = Infinity
+    let target = ''
+
+    while (offset < total && offset < 400) {
+      const rows = await rpc('public_list_ads', { p_limit: 50, p_offset: offset })
+      if (!Array.isArray(rows) || rows.length === 0) break
+      const reported = Number(rows[0].total_count)
+      if (Number.isFinite(reported) && reported > 0) total = reported
+      let passedTarget = false
+
       for (const row of rows) {
         const ad = cleanAd(row)
         if (!ad) continue
-        const previous = ads.find((item) => item.id === ad.id)
-        if (previous && previous.masked !== null) ad.masked = previous.masked
-        next.push(ad)
+        ad.day = kolkataDay(ad.publishedAt)
+        if (!ad.day) continue
+        if (!target) {
+          target = ad.day === today || ad.day === yesterday ? ad.day : ad.day
+        }
+        if (ad.day === target) collected.push(rememberMask(ad))
+        else if (ad.day < target) {
+          passedTarget = true
+          break
+        }
       }
-      const newestChanged = next[0] && ads[0] && next[0].id !== ads[0].id
+
+      offset += rows.length
+      if (passedTarget || rows.length < 50) break
+    }
+
+    return collected
+  }
+
+  const refresh = async () => {
+    try {
+      const next = await loadDay()
+      const currentId = ads[index] ? ads[index].id : ''
       ads = next
-      if (newestChanged || index >= ads.length) index = 0
+      const found = currentId ? ads.findIndex((ad) => ad.id === currentId) : -1
+      index = found >= 0 ? found : 0
       await paint()
     } catch {
       if (ads.length === 0) showWaiting('The live board did not load. Browse it on the marketplace.')
@@ -331,7 +388,7 @@ if (liveFront && liveBack) {
     if (document.hidden || paused || reduceMotion.matches || ads.length < 2) return
     index = (index + 1) % ads.length
     paint()
-  }, 10000)
+  }, 4000)
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) refresh()
   })
