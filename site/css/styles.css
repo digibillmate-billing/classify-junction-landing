@@ -216,6 +216,10 @@ section[id] {
   color: #1a1203;
 }
 
+.nav .btn-ghost:hover {
+  color: #fff;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
