@@ -165,7 +165,7 @@
           <div class="mask-copy">
             <p class="kicker">Your number</p>
             <h2>The full number is not on the page.</h2>
-            <p>Public listings show a mask. Classify Junction keeps the rest until you are the person who posted the advertisement, or a payment to view that number has been verified. Every category on the board today charges ₹50 for a view, and you see that price before you pay.</p>
+            <p>Public listings show a mask. Classify Junction keeps the rest until you are the person who posted the advertisement, or a payment to view that number has been verified. The price for that view is shown before you pay.</p>
           </div>
         </div>
       </section>
@@ -194,7 +194,7 @@
               <h3>If you are posting</h3>
               <ul>
                 <li>Write the title and a description of up to 400 characters.</li>
-                <li>Pick the category. Sell has a posting fee of ₹100. Share, Buy, and Others are free to post.</li>
+                <li>Pick the category. The posting fee, if there is one, is shown before you pay.</li>
                 <li>Pick the audience, then submit. Google sign-in starts here if you are signed out.</li>
                 <li>A free post goes straight to review. A paid post goes to review after the payment is verified.</li>
                 <li>Follow the status under My Advertisements, including a short reason if it is rejected.</li>
@@ -208,10 +208,10 @@
         <div class="wrap">
           <p class="kicker">Prices</p>
           <h2>You see the price before you pay.</h2>
-          <p class="section-lead">Posting and viewing a mobile number are priced separately, in rupees. ₹0 means that step is free. These are the categories on the marketplace on 1 October 2026.</p>
+          <p class="section-lead">Posting and viewing a mobile number are priced separately, in rupees. ₹0 means that step is free.</p>
           <div class="table-wrap">
             <table class="price-table">
-              <caption>Category prices on 1 October 2026.</caption>
+              <caption id="price-caption">Category prices on 1 October 2026. Shown until the live list loads.</caption>
               <thead>
                 <tr>
                   <th scope="col">Category</th>
@@ -219,7 +219,7 @@
                   <th scope="col">To view a number</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="price-rows">
                 <tr>
                   <th scope="row">Sell</th>
                   <td>₹100</td>
@@ -243,7 +243,7 @@
               </tbody>
             </table>
           </div>
-          <ul class="price-cards">
+          <ul class="price-cards" id="price-cards">
             <li>
               <h3>Sell</h3>
               <p>To post <strong>₹100</strong></p>
@@ -266,6 +266,7 @@
             </li>
           </ul>
           <p class="price-note">The amount on the marketplace at the time you post or view a number is the one that applies. A later change to the category does not change a fee that was already issued. You can submit up to 20 advertisements a day.</p>
+          <p class="price-note">To change a price, sign in and open <a href="https://classify-junction.digibillmate-billing.workers.dev/admin/categories">Manage Categories</a>. Set either fee to 0 to make that step free. <a href="https://classify-junction.digibillmate-billing.workers.dev/admin/settings">Settings</a> edits the marketplace name, the review note, and daily limits. It does not change this table. The number-view fee alone is also on <a href="https://classify-junction.digibillmate-billing.workers.dev/admin/mobile-price">Mobile Number Price</a>.</p>
         </div>
       </section>
 
@@ -287,7 +288,7 @@
           </details>
           <details>
             <summary>When does my advertisement go public?</summary>
-            <p>After the team reviews it, usually within 2 working days. Share, Buy, and Others go to that review when you submit. Sell shows the ₹100 fee first; after the payment is verified, it joins the same review. Nothing is public before it is published.</p>
+            <p>After the team reviews it, usually within 2 working days. A free post goes to that review when you submit. A paid post shows its fee first; after the payment is verified, it joins the same review. Nothing is public before it is published.</p>
           </details>
           <details>
             <summary>Can I change an advertisement after I submit it?</summary>

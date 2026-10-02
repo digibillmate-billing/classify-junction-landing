@@ -792,6 +792,10 @@ section[id] {
   font-weight: 700;
 }
 
+.price-cards strong.free {
+  color: var(--green-ink);
+}
+
 .price-note {
   margin-top: 14px;
   color: var(--muted);
