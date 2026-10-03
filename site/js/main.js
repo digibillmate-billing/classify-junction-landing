@@ -144,14 +144,7 @@ if (liveFront && liveBack) {
     if (Number.isNaN(parsed.getTime())) return ''
     return kolkataDayFormat.format(parsed)
   }
-  const addDays = (day, delta) => {
-    const [year, month, date] = day.split('-').map(Number)
-    const shifted = new Date(Date.UTC(year, month - 1, date + delta))
-    const y = shifted.getUTCFullYear()
-    const m = String(shifted.getUTCMonth() + 1).padStart(2, '0')
-    const d = String(shifted.getUTCDate()).padStart(2, '0')
-    return `${y}-${m}-${d}`
-  }
+
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
   let ads = []
   let index = 0
@@ -244,9 +237,7 @@ if (liveFront && liveBack) {
     const when = document.createElement('p')
     when.className = 'listing-when'
     const parsed = new Date(ad.publishedAt)
-    const posted = Number.isNaN(parsed.getTime()) ? 'Published' : `Posted ${postedOn.format(parsed)}`
-    const place = role === 'front' && ads.length > 1 ? ` · ${(index % ads.length) + 1} of ${ads.length}` : ''
-    when.textContent = posted + place
+    when.textContent = Number.isNaN(parsed.getTime()) ? 'Published' : `Posted ${postedOn.format(parsed)}`
     article.append(when)
 
     const numberRow = document.createElement('div')
@@ -321,42 +312,50 @@ if (liveFront && liveBack) {
     return ad
   }
 
-  // One calendar day in India: today, otherwise yesterday, otherwise the newest day that has ads.
+  const DAY_MINIMUM = 20
+
+  // Newest day in India. If it has fewer than 20 ads, add older ones until 20.
   const loadDay = async () => {
-    const today = kolkataDay(new Date().toISOString())
-    const yesterday = addDays(today, -1)
     const collected = []
     let offset = 0
     let total = Infinity
-    let target = ''
+    let newestDay = ''
 
     while (offset < total && offset < 400) {
       const rows = await rpc('public_list_ads', { p_limit: 50, p_offset: offset })
       if (!Array.isArray(rows) || rows.length === 0) break
       const reported = Number(rows[0].total_count)
       if (Number.isFinite(reported) && reported > 0) total = reported
-      let passedTarget = false
+      let finished = false
 
       for (const row of rows) {
         const ad = cleanAd(row)
         if (!ad) continue
         ad.day = kolkataDay(ad.publishedAt)
         if (!ad.day) continue
-        if (!target) {
-          target = ad.day === today || ad.day === yesterday ? ad.day : ad.day
+        if (!newestDay) newestDay = ad.day
+        if (ad.day === newestDay) {
+          collected.push(rememberMask(ad))
+          continue
         }
-        if (ad.day === target) collected.push(rememberMask(ad))
-        else if (ad.day < target) {
-          passedTarget = true
+        if (collected.length >= DAY_MINIMUM) {
+          finished = true
+          break
+        }
+        collected.push(rememberMask(ad))
+        if (collected.length >= DAY_MINIMUM) {
+          finished = true
           break
         }
       }
 
       offset += rows.length
-      if (passedTarget || rows.length < 50) break
+      if (finished || rows.length < 50) break
     }
 
-    return collected
+    const newestCount = collected.filter((ad) => ad.day === newestDay).length
+    if (newestCount >= DAY_MINIMUM) return collected.filter((ad) => ad.day === newestDay)
+    return collected.slice(0, DAY_MINIMUM)
   }
 
   const refresh = async () => {
