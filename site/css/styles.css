@@ -1123,3 +1123,32 @@ a.fake-btn:hover {
     animation: none !important;
   }
 }
+
+/* Phone menu: Browse / Post rows look like the other menu links (no pill buttons). */
+@media (max-width: 900px) {
+  .nav .btn,
+  .nav .btn-ghost {
+    display: block;
+    min-height: 0;
+    margin-top: 0;
+    padding: 14px 2px;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0;
+    background: none;
+    color: #f6f1e7;
+    font-weight: 550;
+    font-size: 0.98rem;
+    text-align: left;
+  }
+
+  .nav .btn:last-child {
+    border-bottom: 0;
+  }
+
+  .nav .btn:hover,
+  .nav .btn-ghost:hover {
+    background: none;
+    color: var(--gold);
+  }
+}
